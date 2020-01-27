@@ -6,7 +6,7 @@ defmodule NextBus.CLI do
     args
     |> parse_args()
     |> NextBus.get_schedule()
-    |> IO.inspect
+    |> printout
   end
 
   defp parse_args(args) do
@@ -24,5 +24,25 @@ defmodule NextBus.CLI do
       true -> nil
     end
     [stop: stop, route: route]
+  end
+
+  defp format_time(time) when is_binary(time) do
+    format_time String.to_integer time
+  end
+
+  defp format_time(time) do
+    :io_lib.format("~b:~2..0b:~2..0b", [div(time, 3600), div(rem(time, 3600), 60), rem(time, 60)])
+  end
+
+  defp printout([]) do
+    IO.puts("Sorry, no departures found.")
+  end
+
+  defp printout(departures) do
+    IO.puts("Upcoming departures:")
+    departures
+    |> Enum.map(fn(%{transport: transport, route: route, expected: expected}) ->
+      IO.puts("#{transport} #{route}: at #{format_time expected}")
+    end)
   end
 end
